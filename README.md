@@ -1,6 +1,6 @@
-# Star Look Unisex Salon — Website
+# Star Looks Unisex Salon — Website
 
-A static, production-ready website for **Star Look Unisex Salon**
+A static, production-ready website for **Star Looks Unisex Salon**
 (`starlookunisexsalon.com`). Built with plain HTML, CSS and JavaScript
 only — no build tools, no frameworks, no backend.
 
@@ -17,7 +17,7 @@ This is a single-page site with the following sections, in order:
 5. Editorial statement
 6. Special offers
 7. Gallery
-8. Why Star Look
+8. Why Star Looks
 9. Contact / booking CTA
 10. Footer
 11. Floating WhatsApp button
@@ -106,7 +106,7 @@ of the file:
 
 ```javascript
 const salonConfig = {
-  name: "Star Look Unisex Salon",
+  name: "Star Looks Unisex Salon",
   phone: "UPDATE_PHONE",
   whatsapp: "UPDATE_WHATSAPP",
   address: "UPDATE_ADDRESS",

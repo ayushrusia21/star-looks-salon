@@ -1,5 +1,5 @@
 /* ===================================================================
-   STAR LOOK UNISEX SALON — script.js
+   STAR LOOKS UNISEX SALON — script.js
    =================================================================== */
 
 /* =========================================================
@@ -9,7 +9,7 @@
    salon's real business details. Replace every UPDATE_* value.
 ========================================================= */
 const salonConfig = {
-  name: "Star Look Unisex Salon",
+  name: "Star Looks Unisex Salon",
   phone: "UPDATE_PHONE",          // e.g. "+919876543210"
   whatsapp: "UPDATE_WHATSAPP",    // digits only, with country code, e.g. "919876543210"
   address: "UPDATE_ADDRESS",
@@ -55,8 +55,8 @@ const offers = [
 ];
 
 const galleryImages = [
-  { src: "assets/images/gallery-01.webp", alt: "Star Look Unisex Salon interior", className: "gallery-item--a" },
-  { src: "assets/images/gallery-02.webp", alt: "Hair styling at Star Look", className: "gallery-item--b" },
+  { src: "assets/images/gallery-01.webp", alt: "Star Looks Unisex Salon interior", className: "gallery-item--a" },
+  { src: "assets/images/gallery-02.webp", alt: "Hair styling at Star Looks", className: "gallery-item--b" },
   { src: "assets/images/gallery-03.webp", alt: "Beauty treatment station", className: "gallery-item--c" },
   { src: "assets/images/gallery-04.webp", alt: "Grooming chair setup", className: "gallery-item--d" },
   { src: "assets/images/gallery-05.webp", alt: "Salon reception area", className: "gallery-item--e" }
@@ -144,7 +144,7 @@ function applyConfigToLinks() {
     document.getElementById("floatingWhatsapp")
   ];
   whatsappLinks.forEach((el) => {
-    if (el) el.href = buildWhatsappUrl("Hi! I'd like to book an appointment at Star Look Unisex Salon.");
+    if (el) el.href = buildWhatsappUrl("Hi! I'd like to book an appointment at Star Looks Unisex Salon.");
   });
 
   const callLinks = [document.getElementById("callCta"), document.getElementById("footerPhone")];
