@@ -115,7 +115,7 @@ const serviceCategories = [
     items: ["Manicure", "Pedicure", "Eyebrows", "Hand Waxing", "Leg Waxing", "Face Tan Pack", "Under Arms", "Gold Facial", "Hand Tan Pack"]
   },
 
-    // ===================== MEN'S SERVICES =====================
+  // ===================== MEN'S SERVICES =====================
   {
     gender: "men",
     name: "Hair Services",
@@ -361,8 +361,6 @@ function buildTelUrl() {
 /* =========================================================
    4. RENDER CONTENT FROM CONFIG
 ========================================================= */
-let activeServiceGender = "women";
-
 function renderServices() {
   const container = document.getElementById("serviceCategories");
   if (!container) return;
@@ -384,6 +382,20 @@ function renderServices() {
     .join("");
 }
 
+let activeServiceGender = "women";
+
+function initServiceTabs() {
+  const tabs = document.querySelectorAll(".service-tab");
+  if (!tabs.length) return;
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      activeServiceGender = tab.dataset.gender;
+      tabs.forEach((t) => t.classList.toggle("is-active", t === tab));
+      renderServices();
+    });
+  });
+}
+
 let activeOfferCategory = "women";
 
 function renderOffers() {
@@ -394,7 +406,7 @@ function renderOffers() {
     .map(
       (o) => `
       <div class="offer-card">
-        <p class="offer-label">Special Offer</p>
+        <p class="offer-label">Limited-Time Offer</p>
         <h3 class="offer-name">${o.name}</h3>
         <p class="offer-desc">${o.description}</p>
         <div class="offer-prices">
@@ -421,17 +433,6 @@ function initOfferTabs() {
   });
 }
 
-function initServiceTabs() {
-  const tabs = document.querySelectorAll(".service-tab");
-  if (!tabs.length) return;
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      activeServiceGender = tab.dataset.gender;
-      tabs.forEach((t) => t.classList.toggle("is-active", t === tab));
-      renderServices();
-    });
-  });
-}
 
 /* =========================================================
    5. APPLY CONFIG TO LINKS
@@ -460,8 +461,10 @@ function applyConfigToLinks() {
   const hours = document.getElementById("footerHours");
   if (hours) hours.textContent = salonConfig.openingHours;
 
-  const directions = document.getElementById("footerDirections");
-  if (directions) directions.href = salonConfig.maps !== "UPDATE_GOOGLE_MAPS" ? salonConfig.maps : "#";
+  const mapFrame = document.getElementById("footerMap");
+  if (mapFrame) {
+    mapFrame.src = `https://www.google.com/maps?q=${encodeURIComponent(salonConfig.address)}&output=embed`;
+  }
 
   const instagram = document.getElementById("footerInstagram");
   if (instagram) instagram.href = salonConfig.instagram !== "UPDATE_INSTAGRAM" ? salonConfig.instagram : "#";
@@ -553,12 +556,20 @@ function initRevealAnimations() {
 }
 
 /* =========================================================
-   9. SCISSOR ANIMATION (runs once)
+   9. SCISSOR ANIMATION (services divider, runs once)
 ========================================================= */
 function initScissorAnimation() {
   const icon = document.getElementById("scissorIcon");
-  if (!icon || !("IntersectionObserver" in window)) {
-    if (icon) icon.classList.add("is-active");
+  const divider = icon ? icon.closest(".scissor-divider") : null;
+  if (!icon) return;
+
+  const activate = () => {
+    icon.classList.add("is-active");
+    if (divider) divider.classList.add("is-active");
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    activate();
     return;
   }
 
@@ -566,7 +577,7 @@ function initScissorAnimation() {
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          icon.classList.add("is-active");
+          activate();
           observer.unobserve(entry.target);
         }
       });
@@ -578,32 +589,38 @@ function initScissorAnimation() {
 }
 
 /* =========================================================
-   10. INIT
+   10. IMAGE SCISSOR-CUT ACCENT (hero on load, about on scroll)
 ========================================================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const steps = [
-    renderServices,
-    renderOffers,
-    initOfferTabs,
-    initServiceTabs,
-    applyConfigToLinks,
-    initStickyHeader,
-    initMobileMenu,
-    initRevealAnimations,
-    initScissorAnimation,
-    initScrollSpy
-  ];
-  steps.forEach((fn) => {
-    try {
-      fn();
-    } catch (err) {
-      console.error(`${fn.name} failed:`, err);
+function initImageScissors() {
+  const heroMedia = document.querySelector(".hero-media");
+  const aboutMedia = document.querySelector(".about-media");
+
+  if (heroMedia) {
+    setTimeout(() => heroMedia.classList.add("is-cutting"), 700);
+  }
+
+  if (aboutMedia) {
+    if (!("IntersectionObserver" in window)) {
+      aboutMedia.classList.add("is-cutting");
+    } else {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              aboutMedia.classList.add("is-cutting");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.35 }
+      );
+      observer.observe(aboutMedia);
     }
-  });
-});
+  }
+}
 
 /* =========================================================
-   11. SCROLL SPY — highlight current section in nav
+   11. SCROLL SPY - highlight current section in nav
 ========================================================= */
 function initScrollSpy() {
   const sectionIds = ["home", "services", "offers", "contact"];
@@ -634,3 +651,29 @@ function initScrollSpy() {
 
   sections.forEach((section) => observer.observe(section));
 }
+
+/* =========================================================
+   12. INIT
+========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const steps = [
+    renderServices,
+    renderOffers,
+    initOfferTabs,
+    initServiceTabs,
+    applyConfigToLinks,
+    initStickyHeader,
+    initMobileMenu,
+    initRevealAnimations,
+    initScissorAnimation,
+    initImageScissors,
+    initScrollSpy
+  ];
+  steps.forEach((fn) => {
+    try {
+      fn();
+    } catch (err) {
+      console.error(`${fn.name} failed:`, err);
+    }
+  });
+});
