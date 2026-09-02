@@ -249,7 +249,7 @@ button { font-family: inherit; cursor: pointer; }
 .header-inner {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 20px;
   padding-block: 22px;
   transition: padding 320ms ease;
@@ -268,9 +268,6 @@ button { font-family: inherit; cursor: pointer; }
 
 .nav-desktop { display: none; }
 .nav-desktop ul { display: flex; gap: 32px; align-items: center; }
-@media (min-width: 900px) {
-  .nav-desktop { margin-left: auto; }
-}
 .nav-link {
   font-size: 0.85rem;
   font-weight: 500;
@@ -298,7 +295,11 @@ button { font-family: inherit; cursor: pointer; }
 .nav-link:hover::after,
 .nav-link.is-active::after { left: 0; right: 0; }
 
-.nav-cta { display: none; }
+.nav-cta {
+  display: inline-flex;
+  padding: 9px 18px;
+  font-size: 0.82rem;
+}
 
 .menu-toggle {
   background: none;
@@ -317,7 +318,7 @@ button { font-family: inherit; cursor: pointer; }
 
 @media (min-width: 900px) {
   .nav-desktop { display: block; }
-  .nav-cta { display: inline-flex; }
+  .nav-cta { padding: 14px 30px; font-size: 0.9rem; }
   .menu-toggle { display: none; }
 }
 
@@ -325,20 +326,23 @@ button { font-family: inherit; cursor: pointer; }
 .mobile-menu {
   position: fixed;
   inset: 0;
-  z-index: 200;
-  background: var(--gradient-main);
+  z-index: 999;
+  isolation: isolate;
+  background-color: #FBF8F3;
+  background-image: var(--gradient-main);
   padding: 24px var(--pad-inline) 40px;
   display: flex;
   flex-direction: column;
-  opacity: 0;
+  visibility: hidden;
   transform: translateY(-12px);
-  transition: opacity 320ms var(--ease-premium), transform 320ms var(--ease-premium);
+  transition: transform 320ms var(--ease-premium), visibility 0s linear 320ms;
   pointer-events: none;
 }
 .mobile-menu[data-open="true"] {
-  opacity: 1;
+  visibility: visible;
   transform: translateY(0);
   pointer-events: auto;
+  transition: transform 320ms var(--ease-premium), visibility 0s linear 0s;
 }
 .mobile-menu[hidden] { display: flex; }
 
@@ -408,6 +412,8 @@ button { font-family: inherit; cursor: pointer; }
 .hero-heading em {
   font-style: italic;
   font-weight: 500;
+}
+.hero-scramble-line--em .hero-word {
   background: var(--gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
@@ -422,9 +428,23 @@ button { font-family: inherit; cursor: pointer; }
 }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
 
+/* Below 900px, hero and about are stacked into a single column
+   (image full-width, text full-width beneath) - center both to match
+   every other section at this width. At 900px+ they switch back to a
+   side-by-side layout, so this only applies while stacked. */
+@media (max-width: 899px) {
+  .hero-text { text-align: center; margin-inline: auto; }
+  .hero-sub { margin-inline: auto; }
+  .hero-actions { justify-content: center; }
+  .about-text { text-align: center; margin-inline: auto; }
+  .about-text .body-copy { margin-inline: auto; }
+}
+
 .hero-media { position: relative; }
 .hero-image {
+  display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 4 / 5;
   object-fit: cover;
   object-position: top center;
@@ -442,13 +462,10 @@ button { font-family: inherit; cursor: pointer; }
     gap: 48px;
   }
   .hero-text { flex: 1 1 auto; max-width: 520px; }
-  .hero-media { flex: 0 0 46%; }
-  /* Shorter, wider crop on desktop so the image fills the column
-     instead of towering above/beside the text */
-  .hero-image { aspect-ratio: 6 / 5; object-position: top center; }
+  .hero-media { flex: 0 0 42%; }
 }
 @media (min-width: 1200px) {
-  .hero-media { flex: 0 0 44%; }
+  .hero-media { flex: 0 0 40%; }
   .hero-image { max-height: 620px; }
 }
 
@@ -545,9 +562,11 @@ button { font-family: inherit; cursor: pointer; }
   filter: blur(2px);
 }
 .about-media img {
+  display: block;
   position: relative;
   z-index: 1;
   width: 100%;
+  height: auto;
   aspect-ratio: 4/5;
   object-fit: cover;
   border-radius: 16px;
@@ -563,7 +582,7 @@ button { font-family: inherit; cursor: pointer; }
 @media (min-width: 900px) {
   .about { padding-block: 100px; }
   .about-inner { flex-direction: row; align-items: center; gap: 64px; }
-  .about-media { flex: 0 0 auto; width: 38%; }
+  .about-media { flex: 0 0 auto; }
   .about-media img {
     width: auto;
     max-width: 100%;
@@ -574,54 +593,71 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* ===================== SCISSOR-CUT ACCENT (hero + about images) =====================
-   Hero: left edge, scissors travel bottom -> top, gold.
-   About: right edge, scissors travel top -> bottom, near-black.
-   Both leave a dashed "cut trace" growing behind them. Triggered by
-   JS adding .is-cutting to .hero-media (on load) / .about-media (on scroll-in). */
+   Scissor travels the edge once, a thin cut line runs directly through
+   its center, then both STAY visible at the finished position (no fade-out).
+   Re-triggered by JS each time the image re-enters view (scroll away and
+   back, or return to the section). Hero: bottom -> top, gold. About:
+   top -> bottom, ivory (for contrast against the darker photo). */
 .cut-trace {
   position: absolute;
   top: 16px;
   bottom: 16px;
-  width: 2px;
+  width: 1.5px;
   z-index: 2;
   opacity: 0;
   pointer-events: none;
-  background-image: repeating-linear-gradient(to bottom, currentColor 0 6px, transparent 6px 15px);
-  transition: transform 1200ms var(--ease-premium), opacity 300ms ease;
+  background-image: repeating-linear-gradient(to bottom, currentColor 0 5px, transparent 5px 12px);
 }
-.cut-trace--left  { left: 14px;  color: var(--champagne-light); transform-origin: bottom; transform: scaleY(0); }
-.cut-trace--right { right: 14px; color: rgba(43, 37, 33, 0.55); transform-origin: top;    transform: scaleY(0); }
-.hero-media.is-cutting .cut-trace--left,
-.about-media.is-cutting .cut-trace--right {
-  opacity: 1;
-  transform: scaleY(1);
-}
+/* Anchored on the same axis as the scissor's visual center (left/right
+   8px + half the 26px icon box = 21px) so the line runs through the
+   middle of the blades, not beside them. */
+.cut-trace--left  { left: 21px;  color: var(--champagne-light); transform-origin: bottom; }
+.cut-trace--right { right: 21px; color: rgba(251, 248, 243, 0.85); transform-origin: top; }
 
 .cut-scissor {
   position: absolute;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 3;
-  display: inline-flex;
-  padding: 6px;
-  border-radius: 50%;
-  background: rgba(251, 248, 243, 0.9);
-  box-shadow: 0 6px 16px -6px rgba(43, 37, 33, 0.5);
+  color: var(--champagne-light);
   opacity: 0;
-  transition: opacity 260ms ease, top 1200ms var(--ease-premium), left 1200ms var(--ease-premium);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
 }
-.cut-scissor--up   { left: 4px; top: calc(100% - 30px); color: var(--champagne-dark); transform: rotate(90deg); }
-.cut-scissor--down { right: 4px; left: auto; top: -14px; color: var(--cocoa-mid); transform: rotate(-90deg); }
+.cut-scissor--up   { left: 8px; top: calc(100% - 34px); transform: rotate(90deg); }
+.cut-scissor--down { left: auto; right: 8px; top: -8px; transform: rotate(-90deg); color: rgba(251, 248, 243, 0.9); }
 
+@keyframes cutTraceGrow {
+  0%   { opacity: 0; transform: scaleY(0); }
+  15%  { opacity: 0.85; }
+  100% { opacity: 0.85; transform: scaleY(1); }
+}
+@keyframes cutScissorTravelUp {
+  0%   { opacity: 0; top: calc(100% - 34px); }
+  12%  { opacity: 1; }
+  100% { opacity: 1; top: 10px; }
+}
+@keyframes cutScissorTravelDown {
+  0%   { opacity: 0; top: -8px; }
+  12%  { opacity: 1; }
+  100% { opacity: 1; top: calc(100% - 34px); }
+}
+
+.hero-media.is-cutting .cut-trace--left,
+.about-media.is-cutting .cut-trace--right {
+  animation: cutTraceGrow 1.6s var(--ease-premium) forwards;
+}
 .hero-media.is-cutting .cut-scissor--up {
-  opacity: 1;
-  top: 10px;
+  animation: cutScissorTravelUp 1.6s var(--ease-premium) forwards;
 }
 .about-media.is-cutting .cut-scissor--down {
-  opacity: 1;
-  top: calc(100% - 30px);
+  animation: cutScissorTravelDown 1.6s var(--ease-premium) forwards;
 }
 
 @media (max-width: 480px) {
-  .cut-scissor { display: none; } /* keep small screens uncluttered */
+  .cut-scissor, .cut-trace { display: none; } /* keep small screens uncluttered */
 }
 
 /* ===================== SCROLL-LINKED SLIDE (About text) =====================
@@ -995,6 +1031,7 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ===================== WHY ===================== */
 .why { padding-block: 72px; background: var(--gradient-main); }
+.why .section-head { text-align: center; }
 .why-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -1184,9 +1221,9 @@ button { font-family: inherit; cursor: pointer; }
 /* ===================== WHATSAPP FLOAT (icon only) ===================== */
 .whatsapp-float {
   position: fixed;
-  right: max(18px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 90;
+  right: max(22px, calc(env(safe-area-inset-right) + 14px));
+  bottom: max(22px, calc(env(safe-area-inset-bottom) + 16px));
+  z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1195,7 +1232,8 @@ button { font-family: inherit; cursor: pointer; }
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  box-shadow: 0 14px 30px -14px rgba(43, 37, 33, 0.55);
+  border: 2.5px solid var(--ivory);
+  box-shadow: 0 4px 10px -2px rgba(43, 37, 33, 0.35), 0 14px 30px -14px rgba(43, 37, 33, 0.55);
   transition: transform 240ms var(--ease-premium), box-shadow 240ms ease;
 }
 .whatsapp-float:hover {

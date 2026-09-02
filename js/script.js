@@ -592,31 +592,37 @@ function initScissorAnimation() {
    10. IMAGE SCISSOR-CUT ACCENT (hero on load, about on scroll)
 ========================================================= */
 function initImageScissors() {
-  const heroMedia = document.querySelector(".hero-media");
-  const aboutMedia = document.querySelector(".about-media");
+  const targets = [document.querySelector(".hero-media"), document.querySelector(".about-media")].filter(Boolean);
+  if (!targets.length) return;
 
-  if (heroMedia) {
-    setTimeout(() => heroMedia.classList.add("is-cutting"), 700);
+  // Replays the cut animation every time an element re-enters view:
+  // remove the class on exit (resets to hidden), force a reflow, then
+  // re-add it on entry so the CSS animation restarts from 0%.
+  const replay = (el) => {
+    el.classList.remove("is-cutting");
+    void el.offsetWidth; // force reflow so the next class add restarts the animation
+    el.classList.add("is-cutting");
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("is-cutting"));
+    return;
   }
 
-  if (aboutMedia) {
-    if (!("IntersectionObserver" in window)) {
-      aboutMedia.classList.add("is-cutting");
-    } else {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              aboutMedia.classList.add("is-cutting");
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.35 }
-      );
-      observer.observe(aboutMedia);
-    }
-  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          replay(entry.target);
+        } else {
+          entry.target.classList.remove("is-cutting");
+        }
+      });
+    },
+    { threshold: 0.35 }
+  );
+
+  targets.forEach((el) => observer.observe(el));
 }
 
 /* =========================================================
