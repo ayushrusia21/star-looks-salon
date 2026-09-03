@@ -483,12 +483,40 @@ function applyConfigToLinks() {
 ========================================================= */
 function initStickyHeader() {
   const header = document.getElementById("siteHeader");
+  const mobileBook = document.querySelector(".mobile-hero-book");
+  const heroMedia = document.querySelector(".hero-media");
   if (!header) return;
+  const originalParent = mobileBook ? mobileBook.parentNode : null;
+  const originalNextSibling = mobileBook ? mobileBook.nextSibling : null;
+
+  const setMobileBookPinned = (shouldPin, headerBottom) => {
+    if (!mobileBook || !originalParent) return;
+
+    if (shouldPin && !mobileBook.classList.contains("is-pinned")) {
+      document.body.appendChild(mobileBook);
+    } else if (!shouldPin && mobileBook.classList.contains("is-pinned")) {
+      originalParent.insertBefore(mobileBook, originalNextSibling);
+    }
+
+    mobileBook.classList.toggle("is-pinned", shouldPin);
+    mobileBook.style.top = shouldPin ? `${headerBottom + 8}px` : "";
+  };
+
   const onScroll = () => {
-    header.classList.toggle("is-scrolled", window.scrollY > 12);
+    const isScrolled = window.scrollY > 12;
+    header.classList.toggle("is-scrolled", isScrolled);
+
+    if (mobileBook && heroMedia && window.innerWidth < 900) {
+      const headerBottom = header.getBoundingClientRect().bottom;
+      const naturalBookTop = heroMedia.getBoundingClientRect().bottom
+        - 18 - mobileBook.offsetHeight;
+      const shouldPin = naturalBookTop <= headerBottom;
+      setMobileBookPinned(shouldPin, headerBottom);
+    }
   };
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
 }
 
 /* =========================================================
@@ -502,6 +530,8 @@ function initMobileMenu() {
 
   const openMenu = () => {
     menu.hidden = false;
+    menu.setAttribute("data-open", "false");
+    void menu.offsetWidth;
     requestAnimationFrame(() => menu.setAttribute("data-open", "true"));
     toggle.setAttribute("aria-expanded", "true");
     document.body.classList.add("no-scroll");
